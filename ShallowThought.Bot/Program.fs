@@ -1,6 +1,7 @@
 ﻿open ShallowThought.BotFramework
 open ShallowThought.BotFramework.Util
 open Kathy
+open HttpClient
 
 let server = "irc.luna.red"
 let port = 44444
@@ -24,6 +25,16 @@ let msgHandler (line: string) (write: string -> unit) =
             | Prefix "!echo" rest -> say channel (sprintf "Don't tell me what to do, %s" user)
             | Prefix "!time" rest -> say channel (sprintf "Up yours, %s" user)
             | Prefix "!die" rest -> say channel "Lol no"
+            | Prefix "!light" rest -> 
+                let trimmed = rest.Trim()
+                match trimmed with
+                | Prefix "on" rem -> 
+                    ignore (createRequest Get "http://banana.luna.red/alert/?alert=true" |> getResponseBody)
+                    say channel "Light on http://banana.luna.red/alert"
+                | Prefix "off" rem -> 
+                    ignore (createRequest Get "http://banana.luna.red/alert/?off=true" |> getResponseBody)
+                    say channel "Light off http://banana.luna.red/alert"
+                | _ -> ()
             | Prefix "!kill" rest -> 
                 let trimmed = rest.Trim()
                 match trimmed with
@@ -48,6 +59,12 @@ let msgHandler (line: string) (write: string -> unit) =
             | Prefix "!shutup" rest ->
                 chat_enabled <- false
                 say channel "Aww :("
+            //| Prefix "!barf" rest ->
+            //    say channel "Program.fs: "
+            //    say channel "------------------------------------------------"
+            //    let sources = System.IO.File.ReadLines("../../Program.fs")
+            //    for source_line in sources do
+            //        say channel source_line
             | _ -> 
                 if chat_enabled then
                     let lower = content.ToLowerInvariant()
